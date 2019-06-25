@@ -8,7 +8,7 @@ set -x
 export TMPDIR=${TMPDIR:-"/tmp"} # Needed on travis
 maven_args=${maven_args:-install}
 gradle_args=${gradle_args:-publishToMavenLocal}
-url=${url:-git://github.com/snoopycrimecop/omero-build}
+fork=snoopycrimecop
 branch=${branch:-merge_ci}
 output=$1
 exec 4>${output}
@@ -26,22 +26,25 @@ cleanup() {
 
 trap cleanup EXIT
 
-cd "${temp}"
-echo "Downloading ${url}@${branch} in ${temp}"
-git clone -b "${branch}" "${url}" src
-cd src
-git submodule update --init
+for repo in bio-formats-build omero-build;
+do
+    cd "${temp}"
+    echo "Downloading ${fork}'s ${repo}@${branch} in ${temp}"
+    git clone -b "${branch}" "git://github.com/${fork}/${repo}" "$repo"
+    cd "${repo}"
+    git submodule update --init
 
-if [ -f "pom.xml" ]; then
-    mvn "${maven_args}"
-else
-    if test -e gradle;
-    then
-        echo "Using existing gradle wrapper"
+    if [ -f "pom.xml" ]; then
+        mvn "${maven_args}"
     else
-        DIR="${PWD}"; (cd "${TMPDIR}"; gradle wrapper --gradle-version=5.2.1; mv .gradle gradle gradlew "${DIR}")
+        if test -e gradle;
+        then
+            echo "Using existing gradle wrapper"
+        else
+            DIR="${PWD}"; (cd "${TMPDIR}"; gradle wrapper --gradle-version=5.2.1; mv .gradle gradle gradlew "${DIR}")
+        fi
+        ./gradlew ${gradle_args} -x javadoc -x test
     fi
-    ./gradlew ${gradle_args} -x javadoc -x test
-fi
-git submodule update --init
-foreach-get-version-as-property >&4
+    git submodule update --init
+    foreach-get-version-as-property >&4
+done
