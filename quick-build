@@ -35,7 +35,7 @@ do
     git submodule update --init
 
     if [ -f "pom.xml" ]; then
-        mvn "${maven_args}"
+        time mvn ${maven_args}
     else
         if test -e gradle;
         then
@@ -43,7 +43,7 @@ do
         else
             DIR="${PWD}"; (cd "${TMPDIR}"; gradle wrapper --gradle-version=5.2.1; mv .gradle gradle gradlew "${DIR}")
         fi
-        ./gradlew ${gradle_args}
+        time ./gradlew ${gradle_args}
     fi
     git submodule update --init
     foreach-get-version-as-property >&4
