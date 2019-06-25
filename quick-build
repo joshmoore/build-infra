@@ -6,8 +6,8 @@ set -x
 # Requirements: some gradle installation above 3.x
 
 export TMPDIR=${TMPDIR:-"/tmp"} # Needed on travis
-maven_args=${maven_args:-install}
-gradle_args=${gradle_args:-publishToMavenLocal}
+maven_args=${maven_args:-install -DskipTests -DskipSphinxTests}
+gradle_args=${gradle_args:-publishToMavenLocal -x javadoc -x test}
 fork=snoopycrimecop
 branch=${branch:-merge_ci}
 output=$1
@@ -43,7 +43,7 @@ do
         else
             DIR="${PWD}"; (cd "${TMPDIR}"; gradle wrapper --gradle-version=5.2.1; mv .gradle gradle gradlew "${DIR}")
         fi
-        ./gradlew ${gradle_args} -x javadoc -x test
+        ./gradlew ${gradle_args}
     fi
     git submodule update --init
     foreach-get-version-as-property >&4
