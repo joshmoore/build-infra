@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+name=${name:-unknown}
+
+if [[ -e src/omero_version.py ]]
+then
+    printf "org.openmicroscopy\t"
+    printf "$(grep -E '^\s*name\s*=' setup.py | cut -f2 -d= | tr -cd '0-9a-zA-Z-.')\t"
+    printf "$(grep -E ^omero_version src/omero_version.py | cut -f2 -d= | tr -cd '0-9a-zA-Z-.')\n"
+else
+  echo "Cannot detect version"
+  exit 2
+fi

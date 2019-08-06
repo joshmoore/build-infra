@@ -1,5 +1,10 @@
 if [ -f "pom.xml" ]; then
   python $(dirname $0)/maven.py --recursive
-else
+elif [ -f "build.gradle" ]; then
   git submodule foreach -q gradle-get-version
+elif [ -f "setup.py" ]; then
+  git submodule foreach -q python-get-version
+else
+  echo "Unknown build system"
+  exit 2
 fi
